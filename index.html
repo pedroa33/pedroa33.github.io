@@ -1,1 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ghisallo Trails</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --forest:   #1A2E1A;
+      --earth:    #EDE8DF;
+      --trail:    #D4651A;
+      --stone:    #8B8880;
+      --white:    #F9F7F4;
+      --dark:     #0E1A0E;
+      --mid:      #2E4A2E;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--white);
+      color: var(--forest);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 2.5rem;
+      background: transparent;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(14, 26, 14, 0.92);
+      backdrop-filter: blur(10px);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--trail); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: rgba(249,247,244,0.75);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--trail); }
+
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      background: var(--forest);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* topographic lines */
+    .topo-canvas {
+      position: absolute;
+      inset: 0;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+
+    .hero-content { position: relative; z-index: 2; padding: 2rem; }
+
+    .hero-eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--trail);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 12vw, 9rem);
+      line-height: 0.92;
+      color: var(--white);
+      letter-spacing: 0.04em;
+    }
+    .hero-title .accent { color: var(--trail); }
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: rgba(237,232,223,0.65);
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: 300;
+    }
+    .hero-cta {
+      margin-top: 2.5rem;
+      display: inline-block;
+      background: var(--trail);
+      color: var(--white);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.85rem 2.2rem;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .hero-cta:hover { background: #b8541a; transform: translateY(-2px); }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: rgba(249,247,244,0.4);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: bounce 2.2s ease-in-out infinite;
+    }
+    .hero-scroll svg { width: 18px; opacity: 0.5; }
+    @keyframes bounce {
+      0%,100% { transform: translateX(-50%) translateY(0); }
+      50%      { transform: translateX(-50%) translateY(7px); }
+    }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      background: var(--dark);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+    }
+    .stat {
+      flex: 1;
+      max-width: 220px;
+      padding: 1.8rem 1rem;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat:last-child { border-right: none; }
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.6rem;
+      color: var(--trail);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(249,247,244,0.4);
+      margin-top: 0.25rem;
+    }
+
+    /* ─── SECTIONS ─── */
+    section { padding: 5rem 2rem; }
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-eyebrow {
+      font-size: 0.74rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--trail);
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      color: var(--forest);
+      line-height: 1;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── TRAIL CARDS ─── */
+    .trails-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .trail-card {
+      background: var(--white);
+      border: 1px solid rgba(26,46,26,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: transform 0.22s, box-shadow 0.22s;
+      cursor: default;
+    }
+    .trail-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(26,46,26,0.14);
+    }
+    .trail-card-map {
+      height: 170px;
+      background: var(--mid);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .trail-card-map svg { width: 100%; height: 100%; opacity: 0.55; }
+    .trail-badge {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.7rem;
+      border-radius: 2px;
+    }
+    .badge-easy    { background: #3A8A3A; color: #fff; }
+    .badge-medium  { background: #C8881A; color: #fff; }
+    .badge-hard    { background: #B83232; color: #fff; }
+    .badge-extreme { background: #1A0E0E; color: var(--trail); }
+
+    .trail-card-body { padding: 1.4rem 1.5rem 1.6rem; }
+    .trail-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.55rem;
+      color: var(--forest);
+      letter-spacing: 0.06em;
+      line-height: 1.1;
+    }
+    .trail-location {
+      font-size: 0.78rem;
+      color: var(--stone);
+      margin-top: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .trail-location svg { width: 12px; flex-shrink: 0; }
+    .trail-meta {
+      display: flex;
+      gap: 1.2rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(26,46,26,0.08);
+    }
+    .trail-stat { flex: 1; }
+    .trail-stat-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--forest);
+    }
+    .trail-stat-label {
+      font-size: 0.68rem;
+      color: var(--stone);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .trail-date {
+      font-size: 0.72rem;
+      color: var(--stone);
+      margin-top: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* empty state */
+    .trail-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      border: 2px dashed rgba(26,46,26,0.15);
+      border-radius: 4px;
+      color: var(--stone);
+    }
+    .trail-empty h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.06em;
+      color: var(--stone);
+      margin-top: 0.5rem;
+    }
+    .trail-empty p { font-size: 0.88rem; margin-top: 0.4rem; }
+
+    /* ─── ABOUT ─── */
+    .about-section { background: var(--earth); }
+    .about-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+    .about-portrait {
+      aspect-ratio: 3/4;
+      background: var(--mid);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .about-portrait svg { width: 80px; opacity: 0.2; }
+    .portrait-note {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.1em;
+    }
+    .about-text .section-header { text-align: left; }
+    .about-text p {
+      color: rgba(26,46,26,0.75);
+      font-size: 0.95rem;
+      line-height: 1.75;
+      margin-bottom: 1rem;
+    }
+    .gear-list {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .gear-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-size: 0.85rem;
+      color: var(--forest);
+      font-weight: 500;
+    }
+    .gear-dot {
+      width: 6px; height: 6px;
+      background: var(--trail);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── CONTACT ─── */
+    .contact-section {
+      background: var(--forest);
+      text-align: center;
+    }
+    .contact-section .section-title { color: var(--white); }
+    .contact-section .section-eyebrow { color: var(--trail); }
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .contact-link {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: rgba(249,247,244,0.7);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      padding: 0.75rem 1.4rem;
+      border: 1px solid rgba(249,247,244,0.15);
+      border-radius: 2px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .contact-link:hover { border-color: var(--trail); color: var(--white); }
+    .contact-link svg { width: 18px; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--dark);
+      text-align: center;
+      padding: 1.8rem;
+      font-size: 0.75rem;
+      color: rgba(249,247,244,0.25);
+      letter-spacing: 0.08em;
+    }
+    footer a { color: var(--trail); text-decoration: none; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 700px) {
+      nav { padding: 1rem 1.2rem; }
+      .nav-links { display: none; }
+      .stats-bar { flex-wrap: wrap; }
+      .stat { max-width: 50%; border-bottom: 1px solid rgba(255,255,255,0.06); }
+      .about-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .about-portrait { aspect-ratio: 4/3; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero-scroll { animation: none; }
+      .trail-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav id="nav">
+  <a class="nav-logo" href="#">MTB<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#trilhas">Trilhas</a></li>
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <canvas class="topo-canvas" id="topoCanvas"></canvas>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Mountain Bike · Trilhas & Aventuras</p>
+    <h1 class="hero-title">
+      Ghisallo<br/>
+      <span class="accent">Trails</span>
+    </h1>
+    <p class="hero-sub">Registro das trilhas que pedalo, dos lugares que exploro e das histórias que cada descida conta.</p>
+    <a class="hero-cta" href="#trilhas">Ver Trilhas</a>
+  </div>
+  <div class="hero-scroll">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    scroll
+  </div>
+</section>
+
+<!-- ─── STATS ─── -->
+<div class="stats-bar" id="stats">
+  <div class="stat">
+    <div class="stat-value" id="stat-km">0</div>
+    <div class="stat-label">Km Pedalados</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-trilhas">0</div>
+    <div class="stat-label">Trilhas</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-elev">0</div>
+    <div class="stat-label">Metros de Ganho</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-h">0</div>
+    <div class="stat-label">Horas na Sela</div>
+  </div>
+</div>
+
+<!-- ─── TRILHAS ─── -->
+<section id="trilhas">
+  <div class="section-header">
+    <p class="section-eyebrow">Onde já fui</p>
+    <h2 class="section-title">TRILHAS</h2>
+  </div>
+  <div class="trails-grid" id="trailsGrid">
+    <!-- EXAMPLE CARD — delete or duplicate this block para adicionar trilhas -->
+    <article class="trail-card">
+      <div class="trail-card-map">
+        <svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <path d="M0,120 C40,90 60,130 100,80 S160,20 200,60 260,110 300,70" stroke="#6AAA6A" stroke-width="2.5" fill="none"/>
+          <path d="M0,140 C40,110 60,150 100,100 S160,40 200,80 260,130 300,90" stroke="#4A8A4A" stroke-width="2" fill="none"/>
+          <path d="M0,155 C40,125 60,165 100,115 S160,55 200,95 260,145 300,105" stroke="#3A7A3A" stroke-width="1.5" fill="none"/>
+          <circle cx="100" cy="80" r="5" fill="#D4651A"/>
+          <circle cx="200" cy="60" r="5" fill="#D4651A"/>
+          <line x1="100" y1="80" x2="200" y2="60" stroke="#D4651A" stroke-width="1.5" stroke-dasharray="6,4"/>
+        </svg>
+        <span class="trail-badge badge-medium">Moderado</span>
+      </div>
+      <div class="trail-card-body">
+        <h3 class="trail-name">Trilha da Serra do Candoveiro</h3>
+        <p class="trail-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Rio Grande do Sul
+        </p>
+        <div class="trail-meta">
+          <div class="trail-stat">
+            <div class="trail-stat-value">22 km</div>
+            <div class="trail-stat-label">Distância</div>
+          </div>
+          <div class="trail-stat">
+            <div class="trail-stat-value">680 m</div>
+            <div class="trail-stat-label">Ganho</div>
+          </div>
+          <div class="trail-stat">
+            <div class="trail-stat-value">2h40</div>
+            <div class="trail-stat-label">Tempo</div>
+          </div>
+        </div>
+        <p class="trail-date">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          12 Jun 2025
+        </p>
+      </div>
+    </article>
+    <!-- /EXAMPLE CARD -->
+
+    <!-- Empty state — remove when you have enough cards -->
+    <div class="trail-empty">
+      <svg viewBox="0 0 48 48" fill="none" stroke="#8B8880" stroke-width="1.5" width="48"><circle cx="24" cy="24" r="20"/><path d="M24 14v10l6 6"/></svg>
+      <h3>Mais trilhas em breve</h3>
+      <p>Cada pedalada vai aparecer aqui.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SOBRE ─── -->
+<section class="about-section" id="sobre">
+  <div class="about-inner">
+    <div class="about-portrait">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="28" r="18" stroke="white" stroke-width="2"/>
+        <path d="M8 72c0-17.673 14.327-32 32-32s32 14.327 32 32" stroke="white" stroke-width="2"/>
+      </svg>
+      <span class="portrait-note">← adicione sua foto</span>
+    </div>
+    <div class="about-text">
+      <div class="section-header">
+        <p class="section-eyebrow">Quem pedala</p>
+        <h2 class="section-title">SOBRE MIM</h2>
+      </div>
+      <p>Apaixonado por mountain bike e por tudo que está do lado de fora. Aqui registro as trilhas, as quedas, as subidas que parecem não ter fim e as descidas que valem cada metro de ganho de elevação.</p>
+      <p>Baseado no Rio Grande do Sul, exploro desde as serras gaúchas até onde as rodas levam. Adicione aqui um pouco da sua história.</p>
+      <div class="gear-list">
+        <div class="gear-item"><span class="gear-dot"></span>Bike: seu modelo aqui</div>
+        <div class="gear-item"><span class="gear-dot"></span>Estilo: XC / Enduro / All-Mountain</div>
+        <div class="gear-item"><span class="gear-dot"></span>Pedalando desde: 20XX</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTATO ─── -->
+<section class="contact-section" id="contato">
+  <div class="section-header">
+    <p class="section-eyebrow">Bora pedalar</p>
+    <h2 class="section-title">CONTATO</h2>
+  </div>
+  <div class="contact-links">
+    <a class="contact-link" href="https://github.com/pedroa33" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      GitHub
+    </a>
+    <a class="contact-link" href="https://strava.com/athletes/pedroa33" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+      Strava
+    </a>
+    <a class="contact-link" href="mailto:seuemail@gmail.com">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      E-mail
+    </a>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <p>Feito com duas rodas e um pouco de código · <a href="https://github.com/pedroa33" target="_blank">github.com/pedroa33</a></p>
+</footer>
+
+<script>
+  // ─── Nav scroll ───
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // ─── Topographic canvas animation ───
+  const canvas = document.getElementById('topoCanvas');
+  const ctx = canvas.getContext('2d');
+  let t = 0;
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function drawTopo() {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const lines = 18;
+    for (let i = 0; i < lines; i++) {
+      const baseY = (h / lines) * i + 20;
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(100, 180, 100, ${0.6 - (i * 0.02)})`;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([]);
+
+      const steps = 80;
+      for (let x = 0; x <= steps; x++) {
+        const px = (x / steps) * w;
+        const wave =
+          Math.sin(x * 0.18 + t + i * 0.5) * 22 +
+          Math.sin(x * 0.07 + t * 0.6 + i * 0.3) * 14 +
+          Math.sin(x * 0.34 + t * 1.2) * 8;
+        const py = baseY + wave;
+        x === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+
+    t += 0.006;
+    requestAnimationFrame(drawTopo);
+  }
+  drawTopo();
+
+  // ─── Stats counter animation ───
+  // UPDATE THESE VALUES with your actual totals
+  const targets = {
+    'stat-km':     320,   // total km
+    'stat-trilhas': 14,   // número de trilhas
+    'stat-elev':  8400,   // metros de ganho de elevação
+    'stat-h':       52,   // horas na sela
+  };
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      Object.entries(targets).forEach(([id, target]) => {
+        const el = document.getElementById(id);
+        let count = 0;
+        const step = target / 60;
+        const interval = setInterval(() => {
+          count = Math.min(count + step, target);
+          el.textContent = Math.round(count).toLocaleString('pt-BR');
+          if (count >= target) clearInterval(interval);
+        }, 20);
+      });
+      observer.disconnect();
+    });
+  }, { threshold: 0.4 });
+
+  observer.observe(document.getElementById('stats'));
+</script>
+</body>
+</html>
